@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfil de Inversionista — Oscar Arturo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1814;
+    --ink-2: #4a4740;
+    --ink-3: #8a8780;
+    --paper: #f8f5ef;
+    --paper-2: #f0ece3;
+    --paper-3: #e8e3d8;
+    --accent: #c9702a;
+    --accent-light: #f2e4d4;
+    --accent-dark: #8a4a18;
+    --blue: #2a5c9a;
+    --blue-light: #ddeaf7;
+    --danger: #b83232;
+    --danger-light: #fae8e8;
+    --success: #2a7a4a;
+    --success-light: #e0f5e8;
+    --warn: #8a6a10;
+    --warn-light: #fdf3d0;
+    --rule: #d8d2c5;
+  }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Layout */
+  .page { max-width: 900px; margin: 0 auto; padding: 60px 40px; }
+
+  /* Header */
+  .header { border-top: 3px solid var(--ink); padding-top: 28px; margin-bottom: 48px; }
+  .header-meta { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--ink-3); text-transform: uppercase; margin-bottom: 16px; display: flex; gap: 24px; }
+  .header h1 { font-family: 'DM Serif Display', serif; font-size: 42px; font-weight: 400; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 8px; }
+  .header h1 em { font-style: italic; color: var(--accent); }
+  .header-sub { font-size: 13px; color: var(--ink-2); max-width: 520px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--rule); }
+
+  /* Section headers */
+  .section { margin-bottom: 48px; }
+  .section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+  .section-num { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--ink-3); }
+  .section-title { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400; }
+
+  /* Profile grid */
+  .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .profile-cell { background: var(--paper); padding: 14px 16px; }
+  .profile-cell.full { grid-column: 1 / -1; }
+  .cell-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
+  .cell-value { font-size: 13px; color: var(--ink); font-weight: 500; }
+  .cell-value.large { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 400; }
+  .cell-note { font-size: 11px; color: var(--ink-3); margin-top: 3px; }
+
+  /* Badges */
+  .badge { display: inline-block; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 2px; font-weight: 500; }
+  .badge-orange { background: var(--accent-light); color: var(--accent-dark); }
+  .badge-blue { background: var(--blue-light); color: var(--blue); }
+  .badge-red { background: var(--danger-light); color: var(--danger); }
+  .badge-green { background: var(--success-light); color: var(--success); }
+  .badge-gray { background: var(--paper-3); color: var(--ink-2); }
+
+  /* Exclusion tag */
+  .exclusion { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--danger); background: var(--danger-light); padding: 4px 10px; border-radius: 2px; }
+  .exclusion::before { content: '✕'; font-size: 10px; }
+
+  /* Radar chart */
+  .radar-container { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+  .radar-wrap { position: relative; width: 100%; height: 320px; }
+  .radar-legend { padding-top: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 12px; color: var(--ink-2); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-dot.declared { background: var(--blue); }
+  .legend-dot.real { background: var(--accent); border: none; }
+  .legend-note { font-size: 11px; color: var(--ink-3); margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--rule); line-height: 1.5; }
+
+  /* Tensions */
+  .tension-list { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .tension-item { background: var(--paper); padding: 16px 18px; }
+  .tension-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .tension-num { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-3); padding-top: 1px; flex-shrink: 0; }
+  .tension-title { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .tension-body { font-size: 12px; color: var(--ink-2); line-height: 1.65; margin-bottom: 10px; padding-left: 28px; }
+  .vs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-left: 28px; }
+  .vs-pill { padding: 7px 10px; font-size: 11px; line-height: 1.5; }
+  .vs-label { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; display: block; margin-bottom: 2px; }
+  .vs-declared { background: var(--blue-light); color: var(--blue); }
+  .vs-declared .vs-label { color: var(--blue); }
+  .vs-real { background: var(--accent-light); color: var(--accent-dark); }
+  .vs-real .vs-label { color: var(--accent-dark); }
+
+  /* Conclusion */
+  .conclusion-box { background: var(--ink); color: var(--paper); padding: 24px 28px; margin-top: 48px; }
+  .conclusion-box .section-title { color: var(--paper); font-family: 'DM Serif Display', serif; font-size: 18px; font-weight: 400; margin-bottom: 12px; }
+  .conclusion-body { font-size: 13px; color: #c8c3b8; line-height: 1.7; }
+  .conclusion-body strong { color: var(--paper); font-weight: 500; }
+  .conclusion-actions { margin-top: 16px; padding-top: 16px; border-top: 1px solid #3a3830; }
+  .action-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; font-size: 12px; color: #c8c3b8; }
+  .action-item::before { content: '→'; color: var(--accent); flex-shrink: 0; font-weight: 500; }
+
+  /* Footer */
+  .footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center; }
+  .footer-id { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--ink-3); letter-spacing: 0.08em; }
+
+  @media (max-width: 640px) {
+    .page { padding: 32px 20px; }
+    .profile-grid { grid-template-columns: 1fr; }
+    .profile-cell.full { grid-column: 1; }
+    .radar-container { grid-template-columns: 1fr; }
+    .vs-row { grid-template-columns: 1fr; }
+    .header h1 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-meta">
+      <span>Perfil de inversionista</span>
+      <span>Coach financiero · Schwab</span>
+      <span id="doc-date"></span>
+    </div>
+    <h1>Oscar Arturo<br><em>Inversionista moderado</em></h1>
+    <p class="header-sub">Documento de referencia para sesión inicial con coach financiero. Incluye perfil declarado, contexto personal y análisis de tensiones entre expectativas y situación real.</p>
+  </header>
+
+  <!-- 1. Perfil -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">Perfil de inversión</span>
+    </div>
+
+    <div class="profile-grid">
+      <div class="profile-cell">
+        <div class="cell-label">Capital a invertir</div>
+        <div class="cell-value large">$4,000 USD</div>
+        <div class="cell-note">Capital único inicial · sin aportes adicionales planificados</div>
+      </div>
+      <div class="profile-cell">
+        <div class="cell-label">Plataforma</div>
+        <div class="cell-value large">Schwab</div>
+        <div class="cell-note">Con apoyo de coach financiero personal</div>
+      </div>
+      <div class="profile-cell">
+        <div class="cell-label">Objetivo principal</div>
+        <div class="cell-value">Diversificar ingresos y generar crecimiento patrimonial</div>
+      </div>
+      <div class="profile-cell">
+        <div class="cell-label">Horizonte de inversión</div>
+        <div class="cell-value">2 – 3 años <span class="badge badge-orange">sin meta definida</span></div>
+        <div class="cell-note">Plazo orientativo; destino del capital aún no determinado</div>
+      </div>
+      <div class="profile-cell">
+        <div class="cell-label">Tolerancia al riesgo declarada</div>
+        <div class="cell-value">Moderada · acepta caídas de 10–15%</div>
+        <div class="cell-note">Con incomodidad psicológica reconocida ante pérdidas temporales</div>
+      </div>
+      <div class="profile-cell">
+        <div class="cell-label">Estilo de gestión</div>
+        <div class="cell-value">Pasivo · bajo mantenimiento</div>
+        <div class="cell-note">Sin intención de monitoreo constante</div>
+      </div>
+      <div class="profile-cell">
+        <div class="cell-label">Diversificación</div>
+        <div class="cell-value">Amplia · sin preferencias sectoriales</div>
+        <div class="cell-note">Sin restricciones geográficas</div>
+      </div>
+      <div class="profile-cell">
+        <div class="cell-label">Activos excluidos</div>
+        <div class="cell-value"><span class="exclusion">Criptomonedas</span></div>
+      </div>
+      <div class="profile-cell full">
+        <div class="cell-label">Retorno esperado</div>
+        <div class="cell-value">Superar rendimientos de renta fija conservadora en USD</div>
+        <div class="cell-note">Referencia actual: 9.5% anual en CRC (Transcomer 2025) — benchmark en moneda diferente; requiere ajuste conceptual</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Contexto personal -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">Contexto personal y financiero</span>
+    </div>
+
+    <div class="profile-grid">
+      <div class="profile-cell">
+        <div class="cell-label">Edad · estado civil</div>
+        <div class="cell-value">36 años · soltero</div>
+      </div>
+      <div class="profile-cell">
+        <div class="cell-label">Ingreso neto mensual</div>
+        <div class="cell-value large">₡1,100,000</div>
+        <div class="cell-note">Salario público · fuente única · empleo estable</div>
+      </div>
+      <div class="profile-cell">
+        <div class="cell-label">Fondo de emergencia</div>
+        <div class="cell-value"><span class="badge badge-red">Liquidez limitada</span></div>
+        <div class="cell-note">Ahorros en solidarismo y cooperativa: accesibles solo por renuncia o despido. Sin reserva líquida para emergencias médicas o familiares.</div>
+      </div>
+      <div class="profile-cell">
+        <div class="cell-label">Deudas activas</div>
+        <div class="cell-value"><span class="badge badge-green">Sin deudas relevantes</span></div>
+        <div class="cell-note">Tarjeta de crédito con pagos tasa 0 · bajo control</div>
+      </div>
+      <div class="profile-cell">
+        <div class="cell-label">Experiencia previa</div>
+        <div class="cell-value">Fondo inmobiliario · Transcomer CR</div>
+        <div class="cell-note">₡3,000,000 por 12 meses · rendimiento neto 9.5% (₡285,000) · perfil pasivo</div>
+      </div>
+      <div class="profile-cell">
+        <div class="cell-label">Contexto geográfico</div>
+        <div class="cell-value">Costa Rica · San José</div>
+        <div class="cell-note">Moneda de referencia para esta inversión: USD</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Radar -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">Perfil declarado vs perfil real</span>
+    </div>
+
+    <div class="radar-container">
+      <div class="radar-wrap">
+        <canvas id="radarChart" role="img" aria-label="Radar comparando perfil declarado vs perfil sugerido por respuestas en 6 dimensiones de inversión">Comparación de 6 ejes: tolerancia al riesgo, liquidez de emergencia, horizonte definido, continuidad del ahorro, experiencia inversora, claridad en retorno esperado.</canvas>
+      </div>
+      <div class="radar-legend">
+        <div class="legend-item"><span class="legend-dot declared"></span>Perfil declarado</div>
+        <div class="legend-item"><span class="legend-dot real"></span>Lo que sugieren las respuestas</div>
+        <p class="legend-note">Escala 1–5. Mayor puntaje = más favorable para inversión activa o agresiva. La brecha entre líneas indica tensión entre autopercepción y condiciones reales.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Tensiones -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">Tensiones e incoherencias identificadas</span>
+    </div>
+
+    <div class="tension-list">
+
+      <div class="tension-item">
+        <div class="tension-head">
+          <span class="tension-num">T-01</span>
+          <span class="tension-title">Tolerancia al riesgo: racional vs emocional</span>
+        </div>
+        <p class="tension-body">Declarás tolerancia moderada (−15% OK), pero reconocés incomodidad psicológica real ante pérdidas. En mercados reales, esa incomodidad produce decisiones de venta en el peor momento posible.</p>
+        <div class="vs-row">
+          <div class="vs-pill vs-declared"><span class="vs-label">Declarado</span>Tolerancia moderada, −15% aceptable</div>
+          <div class="vs-pill vs-real"><span class="vs-label">Real</span>Tolerancia baja-moderada con riesgo de pánico</div>
+        </div>
+      </div>
+
+      <div class="tension-item">
+        <div class="tension-head">
+          <span class="tension-num">T-02</span>
+          <span class="tension-title">Liquidez de emergencia: confianza falsa</span>
+        </div>
+        <p class="tension-body">Los ahorros en solidarismo y cooperativa existen, pero no son líquidos a corto plazo. Una emergencia médica o familiar mientras el portafolio está en caída generaría presión alta para liquidar en mal momento.</p>
+        <div class="vs-row">
+          <div class="vs-pill vs-declared"><span class="vs-label">Declarado</span>Tengo ahorros de respaldo</div>
+          <div class="vs-pill vs-real"><span class="vs-label">Real</span>Sin liquidez inmediata para emergencias no laborales</div>
+        </div>
+      </div>
+
+      <div class="tension-item">
+        <div class="tension-head">
+          <span class="tension-num">T-03</span>
+          <span class="tension-title">Horizonte definido sin meta concreta</span>
+        </div>
+        <p class="tension-body">Un horizonte de 2–3 años sin propósito específico no es un ancla: es una ventana de incomodidad. Sin meta que justifique aguantar la volatilidad, la primera caída significativa puede disparar una salida prematura.</p>
+        <div class="vs-row">
+          <div class="vs-pill vs-declared"><span class="vs-label">Declarado</span>Horizonte 2–3 años</div>
+          <div class="vs-pill vs-real"><span class="vs-label">Real</span>Plazo sin propósito → presión de liquidar ante primera caída</div>
+        </div>
+      </div>
+
+      <div class="tension-item">
+        <div class="tension-head">
+          <span class="tension-num">T-04</span>
+          <span class="tension-title">Expectativa de retorno con benchmark incorrecto</span>
+        </div>
+        <p class="tension-body">El 9.5% de Transcomer fue en colones costarricenses. Usarlo como referencia para una inversión en USD sin ajustar por inflación en dólares (~3–4% anual) y tipo de cambio genera expectativas implícitamente agresivas.</p>
+        <div class="vs-row">
+          <div class="vs-pill vs-declared"><span class="vs-label">Declarado</span>Retorno moderado, superar Transcomer</div>
+          <div class="vs-pill vs-real"><span class="vs-label">Real</span>Benchmark en moneda incorrecta → expectativa distorsionada</div>
+        </div>
+      </div>
+
+      <div class="tension-item">
+        <div class="tension-head">
+          <span class="tension-num">T-05</span>
+          <span class="tension-title">Estilo pasivo confundido con desconexión</span>
+        </div>
+        <p class="tension-body">"Pasivo" no significa ignorar el portafolio. Implica estrategia de bajo mantenimiento con revisiones periódicas conscientes. Sin ningún criterio de revisión ni meta definida, lo pasivo se convierte en abandono y pérdida de control.</p>
+        <div class="vs-row">
+          <div class="vs-pill vs-declared"><span class="vs-label">Declarado</span>Inversión pasiva, sin revisar constantemente</div>
+          <div class="vs-pill vs-real"><span class="vs-label">Real</span>Riesgo de confundir pasividad con desconexión total</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Conclusión -->
+  <div class="conclusion-box">
+    <div class="section-title">Conclusión y pasos previos recomendados</div>
+    <p class="conclusion-body">El perfil real es <strong>más conservador y más frágil</strong> de lo declarado. No por capacidad o voluntad, sino por condiciones estructurales: ausencia de liquidez inmediata, horizonte sin propósito, y benchmark distorsionado que eleva implícitamente la expectativa de retorno. Estas condiciones reducen el margen para aguantar turbulencia sin tomar malas decisiones.</p>
+    <div class="conclusion-actions">
+      <div class="action-item">Definir una meta concreta para los $4,000 antes de elegir productos. La meta ancla la estrategia y el horizonte.</div>
+      <div class="action-item">Construir al menos 1 mes de reserva líquida fuera del solidarismo y cooperativa, antes o en paralelo a la inversión.</div>
+      <div class="action-item">Ajustar la expectativa de retorno al contexto en USD: inflación ~3–4% anual como piso, no como meta.</div>
+      <div class="action-item">Definir con el coach un criterio de revisión periódica (ej. trimestral) para no caer en abandono ni en monitoreo ansioso.</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span class="footer-id">PERFIL-INV-OA · Schwab onboarding</span>
+    <span class="footer-id" id="footer-date"></span>
+  </footer>
+
+</div>
+
+<script>
+  const now = new Date();
+  const fmt = { year: 'numeric', month: 'long', day: 'numeric' };
+  const dateStr = now.toLocaleDateString('es-CR', fmt);
+  document.getElementById('doc-date').textContent = dateStr;
+  document.getElementById('footer-date').textContent = dateStr;
+
+  const labels = [
+    'Tolerancia\nal riesgo',
+    'Liquidez de\nemergencia',
+    'Horizonte\ndefinido',
+    'Continuidad\ndel ahorro',
+    'Experiencia\ninversora',
+    'Claridad en\nretorno esperado'
+  ];
+
+  new Chart(document.getElementById('radarChart'), {
+    type: 'radar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Perfil declarado',
+          data: [3.5, 3.0, 3.5, 2.0, 2.5, 2.5],
+          borderColor: '#2a5c9a',
+          backgroundColor: 'rgba(42,92,154,0.10)',
+          borderWidth: 2,
+          pointBackgroundColor: '#2a5c9a',
+          pointRadius: 4,
+        },
+        {
+          label: 'Perfil real',
+          data: [2.0, 1.5, 2.0, 2.0, 2.0, 1.5],
+          borderColor: '#c9702a',
+          backgroundColor: 'rgba(201,112,42,0.10)',
+          borderWidth: 2,
+          pointBackgroundColor: '#c9702a',
+          pointRadius: 4,
+          borderDash: [5, 3],
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        r: {
+          min: 0,
+          max: 5,
+          ticks: { display: false, stepSize: 1 },
+          grid: { color: 'rgba(26,24,20,0.12)' },
+          angleLines: { color: 'rgba(26,24,20,0.12)' },
+          pointLabels: {
+            font: { size: 10, family: "'Sora', sans-serif" },
+            color: '#8a8780'
+          }
+        }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+</script>
+</body>
+</html>
